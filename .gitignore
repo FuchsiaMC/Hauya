@@ -5,6 +5,7 @@
 
 # Custom
 .env
+.idea/
 
 # User-specific files
 *.rsuser
