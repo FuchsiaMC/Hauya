@@ -1,0 +1,3 @@
+[submodule "Tomat.Framework"]
+	path = Tomat.Framework
+	url = https://github.com/TomatCord/Tomat.Framework

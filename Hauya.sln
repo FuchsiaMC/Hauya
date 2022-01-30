@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hauya", "Hauya\Hauya.csproj", "{72E6B774-7D1C-4C40-9B6A-916A381937A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tomat.Framework", "Tomat.Framework\Tomat.Framework\Tomat.Framework.csproj", "{0785967A-5374-4BD1-8201-771CBF05C630}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{72E6B774-7D1C-4C40-9B6A-916A381937A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72E6B774-7D1C-4C40-9B6A-916A381937A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72E6B774-7D1C-4C40-9B6A-916A381937A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72E6B774-7D1C-4C40-9B6A-916A381937A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0785967A-5374-4BD1-8201-771CBF05C630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0785967A-5374-4BD1-8201-771CBF05C630}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0785967A-5374-4BD1-8201-771CBF05C630}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0785967A-5374-4BD1-8201-771CBF05C630}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
