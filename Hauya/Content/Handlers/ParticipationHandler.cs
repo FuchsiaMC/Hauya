@@ -337,6 +337,14 @@ namespace Hauya.Content.Handlers
                         Builders<BsonDocument>.Update.Set("timezone", message.Content)
                     );
                     
+                    OverwritePermissions userPerms = new(
+                        viewChannel: PermValue.Allow,
+                        readMessageHistory: PermValue.Allow,
+                        sendMessages: PermValue.Deny
+                    );
+
+                    await (message.Channel as SocketGuildChannel)!.AddPermissionOverwriteAsync(message.Author, userPerms);
+                    
                     waitingForOtherTimezone.Remove(message.Author.Id);
 
                     await FinishSubmission(guild, message.Channel, message.Author);
@@ -462,6 +470,15 @@ namespace Hauya.Content.Handlers
                         .WithCurrentTimestamp();
 
                     await component.RespondAsync(embed: otherEmbed.Build());
+                    
+                    OverwritePermissions userPerms = new(
+                        viewChannel: PermValue.Allow,
+                        readMessageHistory: PermValue.Allow,
+                        sendMessages: PermValue.Allow
+                    );
+
+                    await (component.Channel as SocketGuildChannel)!.AddPermissionOverwriteAsync(component.User, userPerms);
+                    
                     waitingForOtherTimezone.Add(component.User.Id);
                 }
                 else
