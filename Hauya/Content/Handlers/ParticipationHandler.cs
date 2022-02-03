@@ -34,7 +34,7 @@ namespace Hauya.Content.Handlers
         private BsonDocument RequestInformation { get; set; } = null!;
 
         private IMongoCollection<BsonDocument> Collection { get; set; } = null!;
-        private int Counter { get; set; }
+        public int Counter { get; set; }
         
         public ParticipationHandler(HauyaBot hauyaBot, IMongoDatabase database)
         {
@@ -60,12 +60,14 @@ namespace Hauya.Content.Handlers
 
         public void SetupParticipants(IMongoDatabase database)
         {
-            Collection = database.GetCollection<BsonDocument>("participants");
+            Collection = database.GetCollection<BsonDocument>(Debugger.IsAttached ? "participants_dev" : "participants");
             Counter = Collection.FindAsync(Builders<BsonDocument>.Filter.Empty).Result.ToEnumerable().Count();
         }
 
         public async Task ParticipationButtonHandler(SocketMessageComponent component)
         {
+            Console.WriteLine("we hit button handerlererser");
+            
             if (component.Message.Author is not SocketGuildUser botUser)
                 throw new Exception("Guild user cast exception in participation button handler.");
 
@@ -152,6 +154,13 @@ namespace Hauya.Content.Handlers
         {
             return Collection
                 .FindAsync(Builders<BsonDocument>.Filter.Eq("discord_id", user.Id)).Result
+                .ToEnumerable();
+        }
+        
+        public IEnumerable<BsonDocument> GetSubmittedSubmissions()
+        {
+            return Collection
+                .FindAsync(Builders<BsonDocument>.Filter.Eq("status", Status.Submitted.ToString())).Result
                 .ToEnumerable();
         }
 
@@ -316,7 +325,7 @@ namespace Hauya.Content.Handlers
             new Thread(Start).Start();
         }
 
-        private List<ulong> waitingForOtherTimezone = new();
+        private readonly List<ulong> waitingForOtherTimezone = new();
 
         public async Task ResponseListener(SocketMessage message)
         {
@@ -350,6 +359,7 @@ namespace Hauya.Content.Handlers
                     await FinishSubmission(guild, message.Channel, message.Author);
                     return;
                 }
+
                 
                 if (!Regex.IsMatch(message.Content, "^\\w{3,16}$"))
                 {
@@ -360,18 +370,19 @@ namespace Hauya.Content.Handlers
                         .WithCurrentTimestamp();
 
                     await (message as SocketUserMessage).ReplyAsync(embed: invalidEmbed.Build());
-                    
+
                     //await (message as SocketUserMessage).ReplyAsync("This username is not valid! Try again...");
-                    
+
                     return;
                 }
-
                 string? uuid;
-                
+
                 using (HttpClient client = new())
                 {
-                    string result = await client.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" + message.Content);
-                    
+                    string result =
+                        await client.GetStringAsync("https://api.mojang.com/users/profiles/minecraft/" +
+                                                    message.Content);
+
                     try
                     {
                         JObject json = JObject.Parse(result);
@@ -382,7 +393,7 @@ namespace Hauya.Content.Handlers
                         uuid = null;
                     }
                 }
-                
+
                 if (uuid == null)
                 {
                     HauyaEmbedBuilder invalidEmbed = new HauyaEmbedBuilder()
@@ -392,7 +403,7 @@ namespace Hauya.Content.Handlers
                         .WithCurrentTimestamp();
 
                     await (message as SocketUserMessage).ReplyAsync(embed: invalidEmbed.Build());
-                    
+
                     //await (message as SocketUserMessage).ReplyAsync("This username does not exist! Try again...");
                     return;
                 }
@@ -403,7 +414,6 @@ namespace Hauya.Content.Handlers
                         Builders<BsonDocument>.Filter.Eq("status", Status.Ongoing.ToString())),
                     Builders<BsonDocument>.Update.Set("minecraft_uuid", uuid)
                 );
-                
                 questionAnsweredUsers.Add(message.Author.Id);
             }
         }
@@ -434,7 +444,7 @@ namespace Hauya.Content.Handlers
                     Builders<BsonDocument>.Filter.Eq("status", Status.Ongoing.ToString())),
                 Builders<BsonDocument>.Update.Set("status", Status.Submitted.ToString())
             );
-                    
+            
             SocketTextChannel toBeDeletedChannel = guild
                 .GetTextChannel((ulong) toBeCancelledSubmission.GetElement("channel_id").Value.AsInt64);
 
@@ -451,6 +461,32 @@ namespace Hauya.Content.Handlers
             }
             
             new Thread(DeleteThread).Start();
+            
+            BsonDocument participationConfig = Bot.Configuration
+                .GetElement("systems").Value.AsBsonDocument
+                .GetElement("participation").Value.AsBsonDocument;
+            
+            // update the counter
+            HauyaEmbedBuilder counterEmbed = new HauyaEmbedBuilder()
+                .WithRoleColor(guild.GetUser(Bot.User.Id))
+                .WithInformation("Participation Counter", "This value shows the amount of participants in the next event compared to the goal." +
+                                                          "\n" +
+                                                          "\n**[" + GetSubmittedSubmissions().Count() + "/20]**")
+                .WithDatabaseCommonFooter(Bot.Configuration, "fuchsia_minecraft", guild)
+                .WithCurrentTimestamp();
+                    
+            SocketTextChannel countChannel = guild.GetTextChannel((ulong) participationConfig
+                .GetElement("channel_id").Value.AsInt64);
+
+            IMessage baseMessage = await countChannel.GetMessageAsync((ulong) Bot.Configuration
+                .GetElement("count_message_id").Value.AsInt64);
+            
+            Console.WriteLine(baseMessage.CreatedAt);
+            
+            IUserMessage message = (baseMessage as IUserMessage)!;
+            
+            await message.ModifyAsync(m => 
+                m.Embed = new Discord.Optional<Embed>(counterEmbed.Build()));
         }
         
         public async Task SelectMenuHandler(SocketMessageComponent component)
@@ -461,8 +497,6 @@ namespace Hauya.Content.Handlers
                 
                 if (component.Data.Values.First() == "other")
                 {
-                    Console.WriteLine("other");
-                    
                     HauyaEmbedBuilder otherEmbed = new HauyaEmbedBuilder()
                         .WithRoleColor(guild.GetUser(Bot.User.Id))
                         .WithInformation("Other timezone", "Please respond with your timezone.")

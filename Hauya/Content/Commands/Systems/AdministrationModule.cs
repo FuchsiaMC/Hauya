@@ -1,12 +1,15 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Discord.WebSocket;
 using Hauya.Common;
 using Hauya.Content.Handlers;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using Tomat.Framework.Common.Embeds;
 using Tomat.Framework.Core.CommandContext;
 using Tomat.Framework.Core.Services.Commands;
@@ -61,6 +64,27 @@ namespace Hauya.Content.Commands.Systems
                     await Context.Guild.GetTextChannel((ulong) participationConfig
                         .GetElement("channel_id").Value.AsInt64
                     ).SendMessageAsync(embed: embed.Build(), components: components.Build());
+                    
+                    HauyaEmbedBuilder counterEmbed = new HauyaEmbedBuilder()
+                        .WithRoleColor(Context.Guild.GetUser(Context.Bot.User.Id))
+                        .WithInformation("Participation Counter", "This value shows the amount of participants in the next event compared to the goal." +
+                                                                  "\n" +
+                                                                  "\n**[" + (Context.Bot as HauyaBot)!.Participation.GetSubmittedSubmissions().Count() + "/20]**")
+                        .WithDatabaseCommonFooter(config,"fuchsia_minecraft", Context.Guild)
+                        .WithCurrentTimestamp();
+                    
+                    RestUserMessage msg = await Context.Guild.GetTextChannel((ulong) participationConfig
+                        .GetElement("channel_id").Value.AsInt64
+                    ).SendMessageAsync(embed: counterEmbed.Build());
+                    
+                   // BsonDocument newParticipation = participationConfig.Add("count_message_id", (long)msg.Id).;
+                    
+                    await (Context.Bot as HauyaBot)!.Database.GetCollection<BsonDocument>("config").UpdateOneAsync(
+                        Builders<BsonDocument>.Filter.And(
+                            Builders<BsonDocument>.Filter
+                                .Eq("name", Debugger.IsAttached ? "development" : "production")),
+                        Builders<BsonDocument>.Update.Set("count_message_id", msg.Id)
+                    );
                     
                     break;
             }
