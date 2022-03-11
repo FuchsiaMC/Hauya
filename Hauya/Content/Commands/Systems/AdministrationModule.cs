@@ -87,6 +87,17 @@ namespace Hauya.Content.Commands.Systems
                     );
                     
                     break;
+
+                case "fixroles":
+                    HauyaBot bot = (Context.Bot as HauyaBot)!;
+                    foreach (BsonDocument doc in bot.Participation.GetSubmittedSubmissions())
+                    {
+                        long id = doc.GetElement("discord_id").Value.AsInt64;
+
+                        await Context.Guild.GetUser((ulong)id).AddRoleAsync(938690755189432331);
+                    }
+                    
+                    break;
             }
         }
 

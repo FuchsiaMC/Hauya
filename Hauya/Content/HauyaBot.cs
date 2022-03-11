@@ -22,7 +22,7 @@ namespace Hauya.Content
         
         public BsonDocument Configuration { get; set; }
         
-        public ParticipationHandler Participation { get; set; }
+        public ParticipationHandler Participation { get; }
         
         public HauyaBot(IMongoDatabase database) : base(GetConfig(database).Result.GetElement("token").Value.AsString)
         {
