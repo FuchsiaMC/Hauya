@@ -92,12 +92,14 @@ namespace Hauya.Content.Commands.Systems
                     HauyaBot bot = (Context.Bot as HauyaBot)!;
                     foreach (BsonDocument doc in bot.Participation.GetSubmittedSubmissions())
                     {
-                        long id = doc.GetElement("discord_id").Value.AsInt64;
+                        ulong id = (ulong) doc.GetElement("discord_id").Value.AsInt64;
 
-                        SocketGuildUser user = Context.Guild.GetUser((ulong) id);
+                        SocketGuildUser user = Context.Guild.GetUser(id);
 
                         if (user == null)
                         {
+                            await Context.Message.ReplyAsync(Context.Guild.ToString());
+                            await Context.Message.ReplyAsync(doc.ToString());
                             await Context.Message.ReplyAsync("broken? " + doc.GetElement("discord_username").Value.AsString);
                             continue;
                         }
