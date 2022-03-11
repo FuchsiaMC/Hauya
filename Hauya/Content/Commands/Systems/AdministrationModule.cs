@@ -94,8 +94,15 @@ namespace Hauya.Content.Commands.Systems
                     {
                         long id = doc.GetElement("discord_id").Value.AsInt64;
 
-                        if (Context.Guild.GetUser((ulong)id) != null)
-                            await Context.Guild.GetUser((ulong)id).AddRoleAsync(938690755189432331);
+                        SocketGuildUser user = Context.Guild.GetUser((ulong) id);
+
+                        if (user == null)
+                        {
+                            await Context.Message.ReplyAsync("broken? " + doc.GetElement("discord_username").Value.AsString);
+                            continue;
+                        }
+                        
+                        await user.AddRoleAsync(938690755189432331);
                     }
                     
                     break;
