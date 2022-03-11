@@ -435,6 +435,9 @@ namespace Hauya.Content.Handlers
                 .WithCurrentTimestamp();
 
             await channel.SendMessageAsync(embed: finishEmbed.Build());
+
+            // todo: unhardcode
+            await guild.GetUser(user.Id).AddRoleAsync(938690755189432331);
             
             BsonDocument toBeCancelledSubmission = GetOngoingSubmission(user) ?? throw new Exception("the fuck its null bitch?");
 
