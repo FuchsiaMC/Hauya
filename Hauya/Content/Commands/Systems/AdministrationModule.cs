@@ -94,7 +94,8 @@ namespace Hauya.Content.Commands.Systems
                     {
                         long id = doc.GetElement("discord_id").Value.AsInt64;
 
-                        await Context.Guild.GetUser((ulong)id).AddRoleAsync(938690755189432331);
+                        if (Context.Guild.GetUser((ulong)id) != null)
+                            await Context.Guild.GetUser((ulong)id).AddRoleAsync(938690755189432331);
                     }
                     
                     break;
