@@ -271,7 +271,7 @@ namespace Hauya.Content.Handlers
                             {
                                 int index = 0;
                                 foreach (List<TimeZoneInfo> timezoneSplit in TimeZoneInfo.GetSystemTimeZones()
-                                    .Where(t => t.Id.StartsWith("Australia")).ToList().Split(25))
+                                    .Where(t => t.Id.StartsWith("Australia")).ToList().SplitByChunkSize(25))
                                 {
                                     if (index > 4)
                                     {

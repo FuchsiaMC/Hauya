@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using Hauya.Common;
 using Hauya.Content.Handlers;
+using Hauya.Utilities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Tomat.Framework.Common.Embeds;
@@ -38,6 +40,8 @@ namespace Hauya.Content.Commands.Systems
             
             string[] args = command.Split(" ");
 
+            HauyaBot bot = (Context.Bot as HauyaBot)!;
+            
             switch (args[0])
             {
                 case "setup":
@@ -89,7 +93,6 @@ namespace Hauya.Content.Commands.Systems
                     break;
 
                 case "fixroles":
-                    HauyaBot bot = (Context.Bot as HauyaBot)!;
                     foreach (BsonDocument doc in bot.Participation.GetSubmittedSubmissions())
                     {
                         ulong id = (ulong) doc.GetElement("discord_id").Value.AsInt64;
@@ -106,7 +109,27 @@ namespace Hauya.Content.Commands.Systems
                         
                         await user.AddRoleAsync(938690755189432331);
                     }
+
+                    break;
+                case "genteams":
+                    // divide the participants into 4 teams
+                    List<BsonDocument> participants = bot.Participation.GetSubmittedSubmissions().ToList();
                     
+                    // shuffle the participants enumerable
+                    participants = participants.Shuffle().ToList();
+
+                    IEnumerable<IEnumerable<BsonDocument>> teams = participants.SplitByChunks(4);
+
+                    int i = 1;
+                    
+                    foreach (IEnumerable<BsonDocument> team in teams)
+                    {
+                        string teamName = "Team " + i;
+                        
+                        await Context.Channel.SendMessageAsync(teamName + ": " + string.Join(", ", team.Select(x => x.GetElement("discord_username").Value.AsString)));
+                        i++;
+                    }
+
                     break;
             }
         }
