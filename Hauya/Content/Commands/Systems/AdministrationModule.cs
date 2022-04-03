@@ -73,7 +73,7 @@ namespace Hauya.Content.Commands.Systems
                         .WithRoleColor(Context.Guild.GetUser(Context.Bot.User.Id))
                         .WithInformation("Participation Counter", "This value shows the amount of participants in the next event compared to the goal." +
                                                                   "\n" +
-                                                                  "\n**[" + (Context.Bot as HauyaBot)!.Participation.GetSubmittedSubmissions().Count() + "/20]**")
+                                                                  "\n**[" + (Context.Bot as HauyaBot)!.Participation.GetSubmittedSubmissions().Count() + "/25]**")
                         .WithDatabaseCommonFooter(config,"fuchsia_minecraft", Context.Guild)
                         .WithCurrentTimestamp();
                     
